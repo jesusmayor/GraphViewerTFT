@@ -1,0 +1,216 @@
+Support following Drkasios in twitter, twitch or tiktok. Thx :D
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+    .node {
+        stroke-width:2px;
+    }
+
+    .link {
+        stroke: #777;
+        stroke-width: 2px;
+    }
+</style>
+<title>Force-Directed Graph</title>
+
+<body>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+        function makeGraph (champs, sinergies)
+        {
+            let nodes = []
+            champs.forEach(e => nodes.push({'id': e.name, 'image':'./Champs/'+e.name+'.jpg', color:colors[e.cost]}));
+            sinergies.forEach(e => nodes.push({'id': e.name, 'image':'./Sinergies/'+e.name+'.svg', color:colors[0]}));
+
+            let links = []
+            champs.forEach(e => e['sinergies'].forEach(s => {links.push({ 'source': e.name, 'target': s})}));
+
+            //add svg to our body
+            let svg = d3.select('body').append('svg')
+                .attr('width',width)
+                .attr('height',height)
+
+            let simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id))
+                .force("charge", d3.forceManyBody().strength(-100))
+                .force("center", d3.forceCenter(width /2, height /2))
+                .force("collide", d3.forceCollide(radius))
+                .on("tick", tick) //Draw an drag.
+
+            let link = svg.append('g')
+                .attr('class', 'links')
+                .selectAll("line")
+                .data(links)
+                .enter().append('line')
+                .attr('class', 'link');
+
+            let images = svg.append('g')
+                .append('defs')
+                .selectAll("circle")
+                .data(nodes)
+                .enter()
+                .append('pattern')
+                .attr('id', d => d.id)
+                .attr('width', 1)
+                .attr('height', 1)
+                .attr('patternContentUnits', 'objectBoundingBox')
+                .append('image')
+                .attr("xlink:href", d => d.image)
+                .attr('width', 1)
+                .attr('height', 1)
+                .attr("preserveAspectRatio", "xMinYMin slice");
+                
+            let node = svg.append('g')
+                .attr("class","nodes")
+                .selectAll("circle")
+                .data(nodes)
+                .enter().append('circle')
+                .attr('class', 'node')
+                .attr('r', radius)
+                .attr("fill", d => `url(#${d.id})`)
+                .attr("stroke", d => d.color)
+                .call(d3.drag()
+                    .on("start", dragStart)
+                    .on("drag", dragTick)
+                    .on("end", dragEnd));
+
+
+            function tick(e){
+                node.attr('cx', function(d){return d.x;})
+                    .attr('cy', function(d){return d.y;})
+
+                link.attr('x1', function(d){ return d.source.x;})
+                    .attr('y1', function(d){ return d.source.y;})
+                    .attr('x2', function(d){ return d.target.x;})
+                    .attr('y2', function(d){ return d.target.y;})
+            }
+
+            function dragStart(d) {
+                if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+            function dragTick (d) {
+                d.fx = d3.event.x;
+                d.fy = d3.event.y;
+            }
+            function dragEnd (d) {
+                if (!d3.event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }          
+
+        var width = 2560, height = 1920;
+
+        const radius = 15;
+
+        const colors = {
+                0: "#000000",
+                1: "#b6b6b6",
+                2: "#2fc92a",
+                3: "#205bda",
+                4: "#d521e6",
+                5: "#caa500"
+            };
+        
+
+        var realChamps = [
+            { name: 'Lucian', cost: 1, sinergies: ['Infiniteam','Quickdraw','Renegade']},
+            { name: 'Pantheon', cost: 1, sinergies: ['Infiniteam','Heart']},
+            { name: 'Gnar', cost: 3, sinergies: ['Gadgeteen','Prankster']},
+            { name: 'Morgana', cost: 3, sinergies: ['Threat']},
+            { name: 'Shen', cost: 3, sinergies: ['Infiniteam','Defender','Hacker']},
+            { name: 'Vex', cost: 3, sinergies: ['Riftwalker','Mascot']},
+            { name: 'Aatrox', cost: 4, sinergies: ['Threat']},
+            { name: 'Garen', cost: 4, sinergies: ['MechaPRIME','Defender']},
+            { name: 'Jhin', cost: 4, sinergies: ['Riftwalker','Renegade']},
+            { name: 'Pyke', cost: 2, sinergies: ['Riftwalker','Hacker']},
+            { name: 'Neeko', cost: 4, sinergies: ['StarGuardian','Spellslinger']},
+            { name: 'TwistedFate', cost: 4, sinergies: ['Infiniteam','Duelist','Spellslinger']},
+            { name: 'Warwick', cost: 4, sinergies: ['ADMIN','LaserCorps','Brawler']},
+            { name: 'Ezreal2', cost: 5, sinergies: ['Infiniteam','Parallel','Sureshot']},
+        //nuevo
+            { name: 'Alistar', cost: 3, sinergies: ['OxForce','Aegis','Mascot']},
+            { name: 'Annie', cost: 2, sinergies: ['Gadgeteen','OxForce','Spellslinger']},
+            { name: 'Ashe', cost: 1, sinergies: ['LaserCorps']},
+            { name: 'AurelionSol', cost: 4, sinergies: ['Threat']},
+            { name: 'Belveth', cost: 4, sinergies: ['Threat']},
+            { name: 'Blitzcrank', cost: 1, sinergies: ['ADMIN', 'Brawler']},
+            { name: 'Camille', cost: 2, sinergies: ['ADMIN','Renegade']},
+            { name: 'Draven', cost: 2, sinergies: ['MechaPRIME','Ace']},
+            { name: 'Ekko', cost: 4, sinergies: ['StarGuardian','Aegis','Prankster']},
+            { name: 'Ezreal', cost: 2, sinergies: ['Underground', 'Quickdraw', 'Parallel']},
+            { name: 'Fiddlesticks', cost: 5, sinergies: ['Threat','Corrupted']},
+            { name: 'Fiora', cost: 2, sinergies: ['OxForce','Duelist']},
+            { name: 'Gangplank', cost: 1, sinergies: ['Supers','Duelist']},
+            { name: 'Janna', cost: 5, sinergies: ['Forecaster','Spellslinger']},
+            { name: 'Jax', cost: 3, sinergies: ['MechaPRIME','Brawler']},
+            { name: 'Jinx', cost: 2, sinergies: ['AnimaSquad','Prankster']},
+            { name: 'Kaisa', cost: 3, sinergies: ['StarGuardian', 'Quickdraw']},
+            { name: 'Kayle', cost: 1, sinergies: ['Underground','Duelist']},
+            { name: 'Leblanc', cost: 3, sinergies: ['ADMIN','Hacker','Spellslinger']},
+            { name: 'LeeSin', cost: 2, sinergies: ['Supers', 'Brawler','Heart']},
+            { name: 'Leona', cost: 5, sinergies: ['MechaPRIME','Aegis','Renegade']},
+            { name: 'Lulu', cost: 1, sinergies: ['Gadgeteen','Heart']},
+            { name: 'Lux', cost: 1, sinergies: ['StarGuardian','Spellslinger']},
+            { name: 'Malphite', cost: 2, sinergies: ['Supers','Mascot']},
+            { name: 'MissFortune', cost: 4, sinergies: ['AnimaSquad', 'Ace', 'Quickdraw']},
+            { name: 'MonkeyKing', cost: 1, sinergies: ['MechaPRIME','Defender']},
+            { name: 'Mordekaiser', cost: 5, sinergies: ['LaserCorps', 'Ace']},
+            { name: 'Nasus', cost: 1, sinergies: ['AnimaSquad','Mascot']},
+            { name: 'Nilah', cost: 4, sinergies: ['StarGuardian','Duelist']},
+            { name: 'Nunu', cost: 5, sinergies: ['Gadgeteen','Mascot']},
+            { name: 'Poppy', cost: 1, sinergies: ['Gadgeteen','Defender']},
+            { name: 'Rammus', cost: 3, sinergies: ['Threat']},
+            { name: 'Rell', cost: 2, sinergies: ['StarGuardian','Defender']},
+            { name: 'Renekton', cost: 1, sinergies: ['LaserCorps','Brawler']},
+            { name: 'Riven', cost: 3, sinergies: ['AnimaSquad','Brawler','Defender']},
+            { name: 'Samira', cost: 4, sinergies: ['Underground', 'Ace','Sureshot']},
+            { name: 'Sivir', cost: 2, sinergies: ['Sureshot', 'Infiniteam']},
+            { name: 'Sona', cost: 3, sinergies: ['Underground','Heart','Spellslinger']},
+            { name: 'Sylas', cost: 1, sinergies: ['AnimaSquad','Renegade']},
+            { name: 'Syndra', cost: 5, sinergies: ['StarGuardian','Heart']},
+            { name: 'Urgot', cost: 5, sinergies: ['Threat']},
+            { name: 'Vayne', cost: 3, sinergies: ['AnimaSquad','Duelist']},
+            { name: 'Vi', cost: 2, sinergies: ['Underground','Aegis','Brawler']},
+            { name: 'Viego', cost: 4, sinergies: ['OxForce','Renegade', 'Heart']},
+            { name: 'Yasuo', cost: 2, sinergies: ['LaserCorps','Duelist']}
+        ];
+
+        var realSinergies = [
+            { name: 'Ace', cuts:[1,4]},
+            { name: 'ADMIN', cuts:[2,4,6] },
+            { name: 'Aegis', cuts:[2,3,4,5] },
+            { name: 'AnimaSquad', cuts:[3,5,7] },
+            { name: 'Brawler', cuts:[2,4,6,8] },
+            { name: 'Corrupted', cuts:[1] },
+            { name: 'Defender', cuts:[2,4,6] },
+            { name: 'Duelist', cuts:[2,4,6,8] },
+            { name: 'Forecaster', cuts:[1] },
+            { name: 'Gadgeteen', cuts:[3,5] },
+            { name: 'Hacker', cuts:[2,3,4] },
+            { name: 'Heart', cuts:[2,4,6] },
+            { name: 'Infiniteam', cuts:[3,5,7] },
+            { name: 'LaserCorps', cuts:[3,5,7] },
+            { name: 'Mascot', cuts:[2,4,6,8] },
+            { name: 'MechaPRIME', cuts:[3,5] },
+            { name: 'OxForce', cuts:[2,4,6] },
+            { name: 'Parallel', cuts:[2] },
+            { name: 'Prankster', cuts:[2,3] },
+            { name: 'Quickdraw', cuts:[2,3,4] },
+            { name: 'Renegade', cuts:[3,6] },
+            { name: 'Riftwalker', cuts:[3,6] },
+            { name: 'Spellslinger', cuts:[2,4,6] },
+            { name: 'StarGuardian', cuts:[3,5,7,9] },
+            { name: 'Supers', cuts:[3] },
+            { name: 'Sureshot', cuts:[2,3,4,5] },
+            { name: 'Threat', cuts:[1] },
+            { name: 'Underground', cuts:[3,5] }
+        ];
+                        
+        makeGraph (realChamps, realSinergies);
+
+    </script>
+</body>
+
